@@ -2,32 +2,32 @@ import streamlit as st
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 
-# Title
-st.title("Bangla Sentiment Analysis 🇧🇩")
-st.markdown("This app uses a pretrained BERT model to predict sentiment of Bangla text.")
+st.set_page_config(page_title="Bangla Sentiment Analysis", page_icon="🇧🇩")
+st.title("🇧🇩 Bangla Sentiment Analysis")
+st.markdown("Analyze the sentiment (positive/neutral/negative) of Bangla text using a pretrained BERT model.")
 
-# Load model and tokenizer
 @st.cache_resource
 def load_model():
-    tokenizer = AutoTokenizer.from_pretrained("sagorsarker/bangla-bert-sentiment")
-    model = AutoModelForSequenceClassification.from_pretrained("sagorsarker/bangla-bert-sentiment")
-    return tokenizer, model
+    try:
+        tokenizer = AutoTokenizer.from_pretrained("sagorsarker/bangla-bert-sentiment")
+        model = AutoModelForSequenceClassification.from_pretrained("sagorsarker/bangla-bert-sentiment")
+        return tokenizer, model
+    except Exception as e:
+        st.error(f"Model loading failed: {e}")
+        return None, None
 
 tokenizer, model = load_model()
 
-# Input
-user_input = st.text_area("✍️ Enter Bangla text here:", "")
+text = st.text_area("✍️ Enter Bangla text:", "")
 
-# Predict sentiment
-if st.button("🔍 Analyze Sentiment"):
-    if user_input.strip() == "":
-        st.warning("Please enter some Bangla text.")
-    else:
-        inputs = tokenizer(user_input, return_tensors="pt", padding=True, truncation=True)
+if st.button("🔍 Analyze") and text.strip():
+    if tokenizer and model:
+        inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True)
         with torch.no_grad():
             outputs = model(**inputs)
-        logits = outputs.logits
-        predicted_class = torch.argmax(logits, dim=1).item()
+        pred = torch.argmax(outputs.logits, dim=1).item()
+        labels = {0: "Negative 😞", 1: "Neutral 😐", 2: "Positive 😊"}
+        st.success(f"**Prediction:** {labels[pred]}")
+    else:
+        st.warning("Model could not be loaded. Please try again later.")
 
-        label_map = {0: "Negative 😞", 1: "Neutral 😐", 2: "Positive 😊"}
-        st.success(f"**Predicted Sentiment:** {label_map[predicted_class]}")
