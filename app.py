@@ -10,8 +10,8 @@ st.markdown("Analyze the sentiment (positive/neutral/negative) of Bangla text us
 def load_model():
     try:
         tokenizer = AutoTokenizer.from_pretrained("taushifrahman/bangla-sentiment-BERT")
-model = AutoModelForSequenceClassification.from_pretrained("taushifrahman/bangla-sentiment-BERT")
-
+        model = AutoModelForSequenceClassification.from_pretrained("taushifrahman/bangla-sentiment-BERT")
+        
         return tokenizer, model
     except Exception as e:
         st.error(f"Model loading failed: {e}")
